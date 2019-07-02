@@ -77,6 +77,12 @@ void ESPDashClass::onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * cli
                                     return;
                                 }
                             }
+                            for(int i=0; i < TOGGLE_BUTTON_CARD_LIMIT; i++){
+                                if(ESPDash.toggle_button_card_id[i] == buttonId){
+                                    ESPDash._buttonClickFunc(buttonId);
+                                    return;
+                                }
+                            }
 
                             if(DEBUG_MODE){
                                 Serial.println("buttonClicked Command didn't match any ID in our records! Rouge Request...");
@@ -574,6 +580,73 @@ void ESPDashClass::addButtonCard(const char* _id, const char* _name){
 }
 
 
+////////////////////////
+// Toggle Button Card //
+////////////////////////
+
+// Add Toggle Button Card
+void ESPDashClass::addToggleButtonCard(const char* _id, const char* _name, bool _value){
+    if(_id != NULL){
+        for(int i=0; i < TOGGLE_BUTTON_CARD_LIMIT; i++){
+            if(toggle_button_card_id[i] == ""){
+                if(DEBUG_MODE){
+                    Serial.println("[DASH] Found an empty slot in Button Status Cards. Inserted New Card at Index ["+String(i)+"].");
+                }
+
+                toggle_button_card_id[i] = _id;
+                toggle_button_card_name[i] = _name;
+
+                if(_value){
+                    toggle_button_card_value[i] = 1;
+                }else{
+                    toggle_button_card_value[i] = 0;
+                }
+
+                ws.textAll("{\"response\": \"updateLayout\"}");
+                break;
+            }
+        }
+        return;
+    }else{
+        return;
+    }
+}
+
+// Update Toggle Button Card with Custom Value
+void ESPDashClass::updateToggleButtonCard(const char* _id, bool _value){
+    for(int i=0; i < TOGGLE_BUTTON_CARD_LIMIT; i++){
+        if(toggle_button_card_id[i] == _id){
+            if(DEBUG_MODE){
+                Serial.println("[DASH] Updated Button Status Card at Index ["+String(i)+"].");
+            }
+
+            if(_value){
+                toggle_button_card_value[i] = 1;
+            }else{
+                toggle_button_card_value[i] = 0;
+            }
+
+            DynamicJsonDocument doc(250);
+            JsonObject object = doc.to<JsonObject>();
+            object["response"] = "updateButtonStatusCard";
+            object["id"] = toggle_button_card_id[i];
+            object["value"] = toggle_button_card_value[i];
+            size_t len = measureJson(doc);
+            AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len);
+            if (buffer) {
+                serializeJson(doc, (char *)buffer->get(), len + 1);
+                ws.textAll(buffer);
+            }else{
+                if(DEBUG_MODE){
+                    Serial.println("[DASH] Websocket Buffer Error");
+                }
+            }
+            break;
+        }
+    }
+    return;
+}
+
 /////////////////
 // Slider Card //
 /////////////////
@@ -985,6 +1058,17 @@ void ESPDashClass::generateLayoutResponse(String& result){
         }
     }
 
+    for(int i=0; i < TOGGLE_BUTTON_CARD_LIMIT; i++){
+        if(toggle_button_card_id[i] != ""){
+            DynamicJsonDocument carddoc(250);
+            JsonObject jsoncard = carddoc.to<JsonObject>();
+            jsoncard["id"] = toggle_button_card_id[i];
+            jsoncard["card_type"] = "buttonStatus";
+            jsoncard["name"] = toggle_button_card_name[i];
+            cards.add(jsoncard);
+        }
+    }
+
     for(int i=0; i < LINE_CHART_LIMIT; i++){
         if(line_chart_id[i] != ""){
             DynamicJsonDocument carddoc(1000);
@@ -1150,6 +1234,13 @@ size_t ESPDashClass::getTotalResponseCapacity(){
         }
     }
 
+    for(int i=0; i < TOGGLE_BUTTON_CARD_LIMIT; i++){
+        if(toggle_button_card_id[i] != ""){
+            capacity += JSON_OBJECT_SIZE(3);
+            totalCards++;
+        }
+    }
+
 
     for(int i=0; i < LINE_CHART_LIMIT; i++){
         if(line_chart_id[i] != ""){
@@ -1228,6 +1319,16 @@ size_t ESPDashClass::getButtonCardsLen(){
     return total;
 }
 
+size_t ESPDashClass::getButtonStatusCardsLen(){
+    size_t total = 0;
+    for(int i=0; i < TOGGLE_BUTTON_CARD_LIMIT; i++){
+        if(toggle_button_card_id[i] != ""){
+            total++;
+        }
+    }
+    return total;
+}
+
 size_t ESPDashClass::getLineChartsLen(){
     size_t total = 0;
     for(int i=0; i < LINE_CHART_LIMIT; i++){
@@ -1257,7 +1358,5 @@ size_t ESPDashClass::getSliderCardsLen(){
     }
     return total;
 }
-
-
 
 ESPDashClass ESPDash;
