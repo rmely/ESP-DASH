@@ -7,13 +7,13 @@ AsyncWebSocket ws("/dashws");
 // Handle Websocket Requests
 void ESPDashClass::onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
     if(type == WS_EVT_CONNECT){
-        if(DEBUG_MODE){
+        #if defined(DEBUG_MODE)
             Serial.println("[WEBSOCKET] Client connection received");
-        }
+        #endif
     } else if(type == WS_EVT_DISCONNECT){
-        if(DEBUG_MODE){
+        #if defined(DEBUG_MODE)
             Serial.println("[WEBSOCKET] Client disconnected");
-        }
+        #endif
     } else if(type == WS_EVT_DATA){
         AwsFrameInfo *info = (AwsFrameInfo*)arg;
         if (info->final && info->index == 0 && info->len == len) {
@@ -28,32 +28,32 @@ void ESPDashClass::onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * cli
                 }
             }
             
-            if(DEBUG_MODE){
+            #if defined(DEBUG_MODE)
                 Serial.println("[WEBSOCKET] Message Received: "+message);
-            }
+            #endif
 
             StaticJsonDocument<500> doc;
             DeserializationError err = deserializeJson(doc, message);
             if (err) {
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println(F("deserializeJson() failed: "));
                     Serial.println(err.c_str());
-                }
+                #endif
             }else{
                 JsonObject object = doc.as<JsonObject>();
                 String command = object["command"];
                 if(command != ""){
                     if(command == "getLayout"){
-                        if(DEBUG_MODE){
+                        #if defined(DEBUG_MODE)
                             Serial.println("[WEBSOCKET] Got getLayout Command from Client "+String(client->id()));
-                        }
+                        #endif
                         String result = "";
                         ESPDash.generateLayoutResponse(result);
                         ws.text(client->id(), result);
                     }else if(command == "getStats"){
-                        if(DEBUG_MODE){
+                        #if defined(DEBUG_MODE)
                             Serial.println("[WEBSOCKET] Got getStats Command from Client "+String(client->id()));
-                        }
+                        #endif
                         String result = "";
                         ESPDash.generateStatsResponse(result);
                         ws.text(client->id(), result);
@@ -84,9 +84,9 @@ void ESPDashClass::onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * cli
                                 }
                             }
 
-                            if(DEBUG_MODE){
+                            #if defined(DEBUG_MODE)
                                 Serial.println("buttonClicked Command didn't match any ID in our records! Rouge Request...");
-                            }
+                            #endif
                         }
                     } else if (command == "sliderChanged"){
                         if(ESPDash._sliderChangedFunc != NULL){
@@ -102,15 +102,15 @@ void ESPDashClass::onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * cli
                                 }
                             }
 
-                            if(DEBUG_MODE){
+                            #if defined(DEBUG_MODE)
                                 Serial.println("sliderChanged Command didn't match any ID in our records! Rouge Request...");
-                            }
+                            #endif
                         }                    
                     }
                 }else{
-                    if(DEBUG_MODE){
+                    #if defined(DEBUG_MODE)
                         Serial.println("[WEBSOCKET] Invalid Command");
-                    }
+                    #endif
                 }
             }
         }
@@ -154,9 +154,9 @@ void ESPDashClass::addNumberCard(const char* _id, const char* _name){
     if(_id != NULL){
         for(int i=0; i < NUMBER_CARD_LIMIT; i++){
             if(number_card_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Number Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 number_card_id[i] = _id;
                 number_card_name[i] = _name;
@@ -178,9 +178,9 @@ void ESPDashClass::addNumberCard(const char* _id, const char* _name, int _value)
     if(_id != NULL){
         for(int i=0; i < NUMBER_CARD_LIMIT; i++){
             if(number_card_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Number Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 number_card_id[i] = _id;
                 number_card_name[i] = _name;
@@ -201,9 +201,9 @@ void ESPDashClass::addNumberCard(const char* _id, const char* _name, int _value)
 void ESPDashClass::updateNumberCard(const char* _id, int _value){
     for(int i=0; i < NUMBER_CARD_LIMIT; i++){
         if(number_card_id[i] == _id){
-            if(DEBUG_MODE){
+            #if defined(DEBUG_MODE)
                 Serial.println("[DASH] Updated Number Card at Index ["+String(i)+"].");
-            }
+            #endif
 
             number_card_value[i] = _value;
 
@@ -218,9 +218,9 @@ void ESPDashClass::updateNumberCard(const char* _id, int _value){
                 serializeJson(doc, (char *)buffer->get(), len + 1);
                 ws.textAll(buffer);
             }else{
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Websocket Buffer Error");
-                }
+                #endif
             }
             break;
         }
@@ -239,9 +239,9 @@ void ESPDashClass::addTemperatureCard(const char* _id, const char* _name, int _t
     if(_id != NULL && _type >= 0 && _type <= TEMPERATURE_CARD_TYPES){
         for(int i=0; i < TEMPERATURE_CARD_LIMIT; i++){
             if(temperature_card_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Temperature Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 temperature_card_id[i] = _id;
                 temperature_card_name[i] = _name;
@@ -264,9 +264,9 @@ void ESPDashClass::addTemperatureCard(const char* _id, const char* _name, int _t
     if(_id != NULL && _type >= 0 && _type <= TEMPERATURE_CARD_TYPES){
         for(int i=0; i < TEMPERATURE_CARD_LIMIT; i++){
             if(temperature_card_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Temperature Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 temperature_card_id[i] = _id;
                 temperature_card_name[i] = _name;
@@ -288,9 +288,9 @@ void ESPDashClass::addTemperatureCard(const char* _id, const char* _name, int _t
 void ESPDashClass::updateTemperatureCard(const char* _id, int _value){
     for(int i=0; i < TEMPERATURE_CARD_LIMIT; i++){
         if(temperature_card_id[i] == _id){
-            if(DEBUG_MODE){
+            #if defined(DEBUG_MODE)
                 Serial.println("[DASH] Updated Temperature Card at Index ["+String(i)+"].");
-            }
+            #endif
 
             temperature_card_value[i] = _value;
 
@@ -305,9 +305,9 @@ void ESPDashClass::updateTemperatureCard(const char* _id, int _value){
                 serializeJson(doc, (char *)buffer->get(), len + 1);
                 ws.textAll(buffer);
             }else{
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Websocket Buffer Error");
-                }
+                #endif
             }
             break;
         }
@@ -326,9 +326,9 @@ void ESPDashClass::addHumidityCard(const char* _id, const char* _name){
     if(_id != NULL){
         for(int i=0; i < HUMIDITY_CARD_LIMIT; i++){
             if(humidity_card_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Humidity Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 humidity_card_id[i] = _id;
                 humidity_card_name[i] = _name;
@@ -350,9 +350,9 @@ void ESPDashClass::addHumidityCard(const char* _id, const char* _name, int _valu
     if(_id != NULL){
         for(int i=0; i < HUMIDITY_CARD_LIMIT; i++){
             if(humidity_card_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Humidity Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 humidity_card_id[i] = _id;
                 humidity_card_name[i] = _name;
@@ -373,9 +373,9 @@ void ESPDashClass::addHumidityCard(const char* _id, const char* _name, int _valu
 void ESPDashClass::updateHumidityCard(const char* _id, int _value){
     for(int i=0; i < HUMIDITY_CARD_LIMIT; i++){
         if(humidity_card_id[i] == _id){
-            if(DEBUG_MODE){
+            #if defined(DEBUG_MODE)
                 Serial.println("[DASH] Updated Humidity Card at Index ["+String(i)+"].");
-            }
+            #endif
 
             humidity_card_value[i] = _value;
 
@@ -390,9 +390,9 @@ void ESPDashClass::updateHumidityCard(const char* _id, int _value){
                 serializeJson(doc, (char *)buffer->get(), len + 1);
                 ws.textAll(buffer);
             }else{
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Websocket Buffer Error");
-                }
+                #endif
             }
             break;
         }
@@ -411,9 +411,9 @@ void ESPDashClass::addStatusCard(const char* _id, const char* _name){
     if(_id != NULL){
         for(int i=0; i < STATUS_CARD_LIMIT; i++){
             if(status_card_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Status Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 status_card_id[i] = _id;
                 status_card_name[i] = _name;
@@ -435,9 +435,9 @@ void ESPDashClass::addStatusCard(const char* _id, const char* _name, int _value)
     if(_id != NULL && _value >= 0 && _value <= STATUS_CARD_TYPES){
         for(int i=0; i < STATUS_CARD_LIMIT; i++){
             if(status_card_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Status Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 status_card_id[i] = _id;
                 status_card_name[i] = _name;
@@ -459,9 +459,9 @@ void ESPDashClass::addStatusCard(const char* _id, const char* _name, bool _value
     if(_id != NULL){
         for(int i=0; i < STATUS_CARD_LIMIT; i++){
             if(status_card_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Status Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 status_card_id[i] = _id;
                 status_card_name[i] = _name;
@@ -486,9 +486,9 @@ void ESPDashClass::addStatusCard(const char* _id, const char* _name, bool _value
 void ESPDashClass::updateStatusCard(const char* _id, bool _value){
     for(int i=0; i < STATUS_CARD_LIMIT; i++){
         if(status_card_id[i] == _id){
-            if(DEBUG_MODE){
+            #if defined(DEBUG_MODE)
                 Serial.println("[DASH] Updated Status Card at Index ["+String(i)+"].");
-            }
+            #endif
 
             if(_value){
                 status_card_value[i] = 1;
@@ -507,9 +507,9 @@ void ESPDashClass::updateStatusCard(const char* _id, bool _value){
                 serializeJson(doc, (char *)buffer->get(), len + 1);
                 ws.textAll(buffer);
             }else{
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Websocket Buffer Error");
-                }
+                #endif
             }
             break;
         }
@@ -523,9 +523,9 @@ void ESPDashClass::updateStatusCard(const char* _id, int _value){
     if(_value >= 0 && _value <= STATUS_CARD_TYPES){
         for(int i=0; i < STATUS_CARD_LIMIT; i++){
             if(status_card_id[i] == _id){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Updated Status Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 status_card_value[i] = _value;
 
@@ -540,9 +540,9 @@ void ESPDashClass::updateStatusCard(const char* _id, int _value){
                     serializeJson(doc, (char *)buffer->get(), len + 1);
                     ws.textAll(buffer);
                 }else{
-                    if(DEBUG_MODE){
+                    #if defined(DEBUG_MODE)
                         Serial.println("[DASH] Websocket Buffer Error");
-                    }
+                    #endif
                 }
                 break;
             }
@@ -564,9 +564,9 @@ void ESPDashClass::addButtonCard(const char* _id, const char* _name){
     if(_id != NULL){
         for(int i=0; i < BUTTON_CARD_LIMIT; i++){
             if(button_card_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Button Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 button_card_id[i] = _id;
                 button_card_name[i] = _name;
@@ -656,9 +656,9 @@ void ESPDashClass::addSliderCard(const char* _id, const char* _name, int _type){
     if(_id != NULL && _type >= 0 && _type <= SLIDER_CARD_TYPES){
         for(int i=0; i < SLIDER_CARD_LIMIT; i++){
             if(slider_card_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Slider Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 slider_card_id[i]    = _id;
                 slider_card_name[i]  = _name;
@@ -679,9 +679,9 @@ void ESPDashClass::addSliderCard(const char* _id, const char* _name, int _type){
 void ESPDashClass::updateSliderCard(const char* _id, int _value){
     for(int i=0; i < SLIDER_CARD_LIMIT; i++){
         if(slider_card_id[i] == _id){
-            if(DEBUG_MODE){
+            #if defined(DEBUG_MODE)
                 Serial.println("[DASH] Updated Slider Card at Index ["+String(i)+"].");
-            }
+            #endif
 
             slider_card_value[i] = _value;
 
@@ -696,9 +696,9 @@ void ESPDashClass::updateSliderCard(const char* _id, int _value){
                 serializeJson(doc, (char *)buffer->get(), len + 1);
                 ws.textAll(buffer);
             }else{
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Websocket Buffer Error (updateSliderCard())");
-                }
+                #endif
             }
             break;
         }
@@ -717,9 +717,9 @@ void ESPDashClass::addLineChart(const char* _id, const char* _name, int _x_axis_
     if(_id != NULL){
         for(int i=0; i < LINE_CHART_LIMIT; i++){
             if(line_chart_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Line Charts. Inserted New Chart at Index ["+String(i)+"].");
-                }
+                #endif
 
                 line_chart_id[i] = _id;
                 line_chart_name[i] = _name;
@@ -751,9 +751,9 @@ void ESPDashClass::addLineChart(const char* _id, const char* _name, String _x_ax
     if(_id != NULL){
         for(int i=0; i < LINE_CHART_LIMIT; i++){
             if(line_chart_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Line Charts. Inserted New Chart at Index ["+String(i)+"].");
-                }
+                #endif
 
                 line_chart_id[i] = _id;
                 line_chart_name[i] = _name;
@@ -785,9 +785,9 @@ void ESPDashClass::addLineChart(const char* _id, const char* _name, String _x_ax
 void ESPDashClass::updateLineChart(const char* _id, int _x_axis_value[], int _x_axis_size, int _y_axis_value[], int _y_axis_size){
     for(int i=0; i < LINE_CHART_LIMIT; i++){
         if(line_chart_id[i] == _id){
-            if(DEBUG_MODE){
+            #if defined(DEBUG_MODE)
                 Serial.println("[DASH] Updated Line Chart at Index ["+String(i)+"].");
-            }
+            #endif
 
             if(line_chart_x_axis_type[i] == false){
                 
@@ -817,9 +817,9 @@ void ESPDashClass::updateLineChart(const char* _id, int _x_axis_value[], int _x_
                     serializeJson(doc, (char *)buffer->get(), len + 1);
                     ws.textAll(buffer);
                 }else{
-                    if(DEBUG_MODE){
+                    #if defined(DEBUG_MODE)
                         Serial.println("[DASH] Websocket Buffer Error");
-                    }
+                    #endif
                 }
             }
             break;
@@ -833,9 +833,9 @@ void ESPDashClass::updateLineChart(const char* _id, int _x_axis_value[], int _x_
 void ESPDashClass::updateLineChart(const char* _id, String _x_axis_value[], int _x_axis_size, int _y_axis_value[], int _y_axis_size){
     for(int i=0; i < LINE_CHART_LIMIT; i++){
         if(line_chart_id[i] == _id){
-            if(DEBUG_MODE){
+            #if defined(DEBUG_MODE)
                 Serial.println("[DASH] Updated Line Chart at Index ["+String(i)+"].");
-            }
+            #endif
 
             if(line_chart_x_axis_type[i] == true){
                 
@@ -865,9 +865,9 @@ void ESPDashClass::updateLineChart(const char* _id, String _x_axis_value[], int 
                     serializeJson(doc, (char *)buffer->get(), len + 1);
                     ws.textAll(buffer);
                 }else{
-                    if(DEBUG_MODE){
+                    #if defined(DEBUG_MODE)
                         Serial.println("[DASH] Websocket Buffer Error");
-                    }
+                    #endif
                 }
             }
             break;
@@ -886,9 +886,9 @@ void ESPDashClass::addGaugeChart(const char* _id, const char* _name){
     if(_id != NULL){
         for(int i=0; i < GAUGE_CHART_LIMIT; i++){
             if(gauge_chart_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Gauge Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 gauge_chart_id[i] = _id;
                 gauge_chart_name[i] = _name;
@@ -908,9 +908,9 @@ void ESPDashClass::addGaugeChart(const char* _id, const char* _name, int _value)
     if(_id != NULL){
         for(int i=0; i < GAUGE_CHART_LIMIT; i++){
             if(gauge_chart_id[i] == ""){
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Found an empty slot in Gauge Cards. Inserted New Card at Index ["+String(i)+"].");
-                }
+                #endif
 
                 gauge_chart_id[i] = _id;
                 gauge_chart_name[i] = _name;
@@ -930,9 +930,9 @@ void ESPDashClass::addGaugeChart(const char* _id, const char* _name, int _value)
 void ESPDashClass::updateGaugeChart(const char* _id, int _value){
     for(int i=0; i < GAUGE_CHART_LIMIT; i++){
         if(gauge_chart_id[i] == _id){
-            if(DEBUG_MODE){
+            #if defined(DEBUG_MODE)
                 Serial.println("[DASH] Updated Gauge Chart at Index ["+String(i)+"].");
-            }
+            #endif
 
             gauge_chart_value[i] = _value;
 
@@ -947,9 +947,9 @@ void ESPDashClass::updateGaugeChart(const char* _id, int _value){
                 serializeJson(doc, (char *)buffer->get(), len + 1);
                 ws.textAll(buffer);
             }else{
-                if(DEBUG_MODE){
+                #if defined(DEBUG_MODE)
                     Serial.println("[DASH] Websocket Buffer Error");
-                }
+                #endif
             }
             break;
         }
@@ -964,9 +964,9 @@ void ESPDashClass::updateGaugeChart(const char* _id, int _value){
 ///////////////////////
 
 void ESPDashClass::generateLayoutResponse(String& result){
-    if(DEBUG_MODE){
+    #if defined(DEBUG_MODE)
         Serial.println("Free HEAP = before = JSON Serialization: "+String(ESP.getFreeHeap()));
-    }
+    #endif
 
     size_t CAPACITY = getTotalResponseCapacity();
 
@@ -1124,9 +1124,9 @@ void ESPDashClass::generateLayoutResponse(String& result){
 
     serializeJson(doc, result);
 
-    if(DEBUG_MODE){
+    #if defined(DEBUG_MODE)
         Serial.println("Free HEAP = after = JSON Serialization: "+String(ESP.getFreeHeap()));
-    }
+    #endif
 
     return;
 }
@@ -1134,9 +1134,9 @@ void ESPDashClass::generateLayoutResponse(String& result){
 
 
 void ESPDashClass::generateStatsResponse(String& result){
-    if(DEBUG_MODE){
+    #if defined(DEBUG_MODE)
         Serial.println("Free HEAP = before = JSON Serialization: "+String(ESP.getFreeHeap()));
-    }
+    #endif
 
     DynamicJsonDocument doc(500);
     JsonObject stats = doc.to<JsonObject>();
@@ -1163,18 +1163,18 @@ void ESPDashClass::generateStatsResponse(String& result){
 
     serializeJson(doc, result);
 
-    if(DEBUG_MODE){
+    #if defined(DEBUG_MODE)
         Serial.println("Free HEAP = after = JSON Serialization: "+String(ESP.getFreeHeap()));
-    }
+    #endif
 
     return;
 }
 
 
 void ESPDashClass::generateRebootResponse(String& result){
-    if(DEBUG_MODE){
+    #if defined(DEBUG_MODE)
         Serial.println("Free HEAP = before = JSON Serialization: "+String(ESP.getFreeHeap()));
-    }
+    #endif
 
     DynamicJsonDocument doc(200);
     JsonObject obj = doc.to<JsonObject>();
@@ -1187,9 +1187,9 @@ void ESPDashClass::generateRebootResponse(String& result){
 
     serializeJson(doc, result);
 
-    if(DEBUG_MODE){
+    #if defined(DEBUG_MODE)
         Serial.println("Free HEAP = after = JSON Serialization: "+String(ESP.getFreeHeap()));
-    }
+    #endif
 
     return;
 }
